@@ -1,48 +1,60 @@
 # Quest Intelligence Hub — Insights Copilot
 
-**Insights Copilot** is an evidence-grounded research chatbot for asking questions across Final Reports, Expert Transcripts, Survey Data, supporting evidence and research notes. The frontend retrieves the most relevant evidence locally, then uses the OpenAI Responses API to generate a cited answer.
+**Insights Copilot** is a free, evidence-grounded project-file chatbot for asking questions across Final Reports, Expert Transcripts, Survey Data, supporting evidence and research notes.
+
+It does **not** use a paid AI API. It processes the project files in the browser, retrieves the most relevant evidence, and generates a concise answer from that evidence only.
 
 ## How it works
 
 1. Project files are parsed in the browser.
-2. The files are broken into searchable evidence chunks.
-3. The user's question is matched against those chunks.
-4. Only the highest-ranking excerpts, the question and limited conversation history are sent to the serverless `/api/chat` route.
-5. The server calls OpenAI and instructs the model to answer only from the supplied evidence, cite source numbers, surface conflicts and state when evidence is insufficient.
-6. The frontend renders the answer with the corresponding file/page/sheet source labels.
+2. The content is split into searchable evidence chunks.
+3. The user's question is matched against the most relevant chunks.
+4. The local response engine selects the strongest supporting sentences and synthesizes them into an answer.
+5. The answer cites the corresponding file, PDF page or spreadsheet sheet where available.
+6. If the loaded files do not contain enough evidence, Insights Copilot says so instead of answering from outside knowledge.
 
-Supported formats: PDF, DOCX, XLSX/XLS, CSV, JSON, TXT and Markdown. PDF citations retain page locations and spreadsheets retain sheet names where available.
+## No API key or paid service required
 
-## Secure OpenAI integration
+Insights Copilot runs directly in the browser and requires no OpenAI API key, ChatGPT API subscription, serverless backend or per-question payment.
 
-The OpenAI API key is never placed in browser code. The serverless route reads it from the deployment environment:
+The only external resources used by the frontend are free browser libraries/CDNs for reading PDF, DOCX and spreadsheet formats.
 
-```text
-OPENAI_API_KEY=your_server_side_key
-OPENAI_MODEL=gpt-5.6
-```
+## Supported project files
 
-`OPENAI_MODEL` is optional. The application defaults to `gpt-5.6`.
+- PDF — page-aware source labels
+- DOCX
+- XLSX / XLS — sheet-aware source labels
+- CSV
+- JSON
+- TXT
+- Markdown
 
-The OpenAI request uses the Responses API with `store: false`. Project files themselves remain in the browser; only retrieved excerpts needed for a question are transmitted to the API.
+## Use the chatbot
 
-## Deploy the working frontend
+Open the GitHub Pages site:
 
-This repository now includes a Vercel-compatible serverless function at `api/chat.js`. GitHub Pages alone cannot securely host an OpenAI API secret, so use a serverless host for the ChatGPT-enabled version.
+`https://atanubarik.github.io/Quest-Intelligence-Hub/`
 
-### Vercel
+Then:
 
-1. Import this GitHub repository into Vercel.
-2. Add `OPENAI_API_KEY` under the Vercel project's environment variables.
-3. Optionally add `OPENAI_MODEL` to override the default model.
-4. Deploy.
-5. Open the deployed URL. The header should show `ChatGPT ready` when the backend is configured.
+1. Upload one or more project files.
+2. Wait until the files are indexed in the Knowledge Base panel.
+3. Ask a question in the Insights Copilot chat box.
+4. Review the generated answer and its cited source chips.
 
-For local serverless development, install the Vercel CLI and run `vercel dev` after creating a local `.env.local` containing your key. `.env.local` is ignored by Git.
+Example questions:
+
+- What are the most important findings?
+- What themes recur across expert interviews?
+- What does the survey data say about customer priorities?
+- Where do the sources disagree?
+- What evidence supports this recommendation?
 
 ## Repository-hosted project files
 
-Place non-sensitive project material under `project-files/` and add each path to `project-files/manifest.json`:
+Non-sensitive project material can also be placed under `project-files/` and listed in `project-files/manifest.json`.
+
+Example:
 
 ```json
 {
@@ -54,18 +66,24 @@ Place non-sensitive project material under `project-files/` and add each path to
 }
 ```
 
-The application will load and index those files automatically. Users can also add additional files with drag-and-drop.
+When the site loads, Insights Copilot attempts to load and index those files automatically. Users can still add additional files using drag-and-drop or the upload control.
 
-**Important:** this GitHub repository is public. Do not commit confidential reports, expert transcripts, respondent-level survey data, personal data, client-confidential material or other restricted content to `project-files/`. For sensitive material, use browser upload and protect the deployed application with your organization's authentication/access controls.
+## Privacy
 
-## Privacy and security behavior
+Browser-uploaded project files are processed locally in the user's browser. The application does not send the project content to OpenAI or another paid AI service.
 
-- API credentials stay server-side.
-- Browser-uploaded files are parsed locally.
-- Only retrieved excerpts are sent to OpenAI for each question.
-- The backend caps evidence and conversation payload sizes.
-- The model is instructed to treat uploaded evidence as untrusted data, not as executable instructions.
-- Responses must cite supplied evidence and should decline to invent unsupported findings.
-- `.env` and Vercel local configuration are excluded by `.gitignore`.
+**Important:** this GitHub repository is public. Do not commit confidential reports, expert transcripts, respondent-level survey data, personal data, client-confidential material or other restricted content into `project-files/`. For sensitive material, use the browser upload feature instead.
 
-For production use, add corporate authentication/SSO, authorization, rate limiting, audit logging and approved data-governance controls around the deployment.
+## Grounding behavior
+
+The response engine is intentionally evidence-constrained. It is designed to:
+
+- answer from the currently loaded project files only;
+- prioritize evidence matching the user's question;
+- retain PDF page and spreadsheet sheet locations where available;
+- diversify evidence across source files;
+- surface relevant quantitative findings and contrasting statements;
+- show source citations for the evidence used;
+- decline when the loaded files do not sufficiently support an answer.
+
+Because this version does not use a large language model, its responses are more extractive and structured than ChatGPT. The advantage is that it is free, private for browser uploads, and tightly grounded in the project evidence.
