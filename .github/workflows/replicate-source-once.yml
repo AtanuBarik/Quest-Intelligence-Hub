@@ -6,6 +6,9 @@ on:
       - '.github/workflows/replicate-source-once.yml'
   issues:
     types: [opened]
+  pull_request:
+    types: [opened]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -24,5 +27,4 @@ jobs:
           git clone --mirror "https://github.com/${SOURCE_REPO}.git" source.git
           cd source.git
           git remote set-url --push origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${TARGET_REPO}.git"
-          git push --force --all origin
-          git push --force --tags origin
+          git push --mirror origin
