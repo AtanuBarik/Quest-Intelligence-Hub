@@ -1,31 +1,52 @@
 # Quest Intelligence Hub - Insights Copilot
 
-**Insights Copilot** is a zero-cost, browser-based document agent for asking questions about project files such as Final Reports, Expert Transcripts, Survey Data, PowerPoint decks, Word documents, spreadsheets, notes, and supporting evidence.
+**Insights Copilot** now supports two response engines in the same frontend:
 
-It does not require a paid ChatGPT or Microsoft Copilot API. The browser parses uploaded files locally, retrieves relevant evidence, and then chooses the appropriate local processing tool for the question.
+1. **Quest Insight Engine** - connects to the Microsoft Copilot Studio agent through the supported web-channel Token Endpoint.
+2. **Local uploaded files** - processes project files in the browser with no paid API and answers only from those uploaded files.
 
-## How the local agent works
+The Microsoft connection is intentionally disabled until a valid Copilot Studio Token Endpoint is configured. No Direct Line secret or other credential is stored in this repository.
 
-1. The user uploads one or more project files using **Choose files** or drag-and-drop.
-2. The browser parses the files and splits readable content into evidence chunks.
-3. The agent classifies the question as direct QA, quantitative, summary, or comparison.
-4. It retrieves the most relevant passages from the uploaded files.
-5. Direct and quantitative questions use a local extractive QA model.
-6. Summaries and comparisons use a small local text-to-text model over retrieved evidence.
-7. A grounding check rejects weak synthesis and falls back to direct evidence extraction.
-8. The answer shows supporting source chips including PDF page, PowerPoint slide, or spreadsheet sheet when available.
-9. If the files do not support the question, the agent does not answer from outside knowledge.
+## Microsoft Copilot Studio mode
 
-## Local AI models
+The frontend includes `copilot-bridge.js` and `copilot-config.js`.
 
-The frontend uses Transformers.js with:
+When configured, questions sent in **Quest Insight Engine** mode are delivered to the Copilot Studio agent over a short-lived Direct Line conversation token obtained from the Microsoft Token Endpoint. The existing UI is retained; the agent becomes the response engine.
 
-- `Xenova/distilbert-base-uncased-distilled-squad` for direct question answering.
-- `Xenova/flan-t5-small` for local summaries and comparisons.
+See **[COPILOT_STUDIO_SETUP.md](COPILOT_STUDIO_SETUP.md)** for the exact configuration steps and security guidance.
 
-The model files are downloaded by the browser when first needed and may be reused from browser cache. No OpenAI API key, ChatGPT API subscription, Vercel backend, Copilot Studio capacity, or per-question API payment is required for this mode.
+### Configuration
 
-## Supported project files
+Edit `copilot-config.js`:
+
+```js
+window.QUEST_COPILOT_CONFIG = Object.freeze({
+  enabled: true,
+  agentName: "Quest Insight Engine",
+  tokenEndpoint: "PASTE_THE_COPILOT_STUDIO_TOKEN_ENDPOINT_HERE",
+  defaultMode: "copilot",
+  responseTimeoutMs: 45000
+});
+```
+
+**Never commit a Direct Line secret, client secret, API key, password, or long-lived bearer token.**
+
+## Local uploaded-files mode
+
+The browser-side document agent remains available as a fallback and for files that are uploaded directly by a user.
+
+Workflow:
+
+1. Upload project files using **Choose files** or drag-and-drop.
+2. The browser parses and chunks the readable content.
+3. The local agent classifies the question as direct QA, quantitative, summary, or comparison.
+4. Relevant evidence is retrieved.
+5. Local browser models answer or synthesize from that evidence only.
+6. The response shows file, PDF page, PowerPoint slide, or Excel sheet sources where available.
+
+Uploaded browser files are **not automatically sent to Quest Insight Engine**. If the Microsoft agent should answer from governed project documents, add those documents to its approved knowledge sources such as SharePoint or OneDrive.
+
+## Supported local file types
 
 - PDF - page-aware source labels
 - DOCX - Word documents
@@ -36,37 +57,40 @@ The model files are downloaded by the browser when first needed and may be reuse
 - TXT
 - Markdown
 
-Legacy binary `.doc` and `.ppt` files are not parsed by the static browser app. Save them as `.docx` or `.pptx` before uploading.
+Legacy binary `.doc` and `.ppt` files should be saved as `.docx` or `.pptx` before upload.
+
+## Local AI models
+
+The local mode uses Transformers.js with:
+
+- `Xenova/distilbert-base-uncased-distilled-squad` for direct question answering.
+- `Xenova/flan-t5-small` for summaries and comparisons.
+
+These run in the browser and require no OpenAI API key or paid inference backend.
 
 ## Use the chatbot
 
-Open the GitHub Pages site:
+GitHub Pages:
 
 `https://atanubarik.github.io/Quest-Intelligence-Hub/`
 
-Then:
+Select the response engine in the chat header:
 
-1. Click **Choose files**.
-2. Select one or more supported project files.
-3. Wait until the Knowledge Base shows them as ready.
-4. Ask a question about the files.
-5. On first use, allow the browser time to download the required local model.
-6. Review the answer and source chips.
+- **Quest Insight Engine** for Copilot Studio knowledge and actions once configured.
+- **Local uploaded files** for browser-only project-file analysis.
 
-Example questions:
+## Security and privacy
 
-- What percentage of respondents preferred option A?
-- What did experts identify as the main barrier?
-- Summarize the most important findings across the report and presentation.
-- Compare the survey results with the expert interviews.
-- Where do the report and PowerPoint deck disagree?
-- What recommendation is supported by the strongest evidence?
+This repository and its GitHub Pages site are public.
+
+- Do not store secrets in repository files.
+- Do not commit confidential reports, expert transcripts, respondent-level survey data, personal data, or client-confidential material to `project-files/`.
+- A no-authentication Copilot web channel should not expose sensitive enterprise knowledge on a public website.
+- For internal/sensitive deployments, use your organization's approved Microsoft Entra ID / Copilot Studio authenticated integration and access-controlled hosting.
 
 ## Repository-hosted project files
 
-Non-sensitive project material can also be placed under `project-files/` and listed in `project-files/manifest.json`.
-
-Example:
+Non-sensitive project files can optionally be listed in `project-files/manifest.json`:
 
 ```json
 {
@@ -79,16 +103,4 @@ Example:
 }
 ```
 
-The app loads those files automatically when the page starts. Manual upload remains available.
-
-## Privacy
-
-Uploaded project files are parsed and searched locally in the browser. They are not sent to OpenAI, Microsoft Copilot, or another paid AI API in the zero-cost mode.
-
-The browser does download the JavaScript libraries and pretrained local model files needed for parsing and inference. Those models then run in the browser against retrieved text from the uploaded project files.
-
-**Important:** this GitHub repository is public. Do not commit confidential reports, expert transcripts, respondent-level survey data, personal data, client-confidential material, or other restricted content into `project-files/`. Use browser upload for sensitive material, subject to your organization's data-handling requirements.
-
-## Optional enterprise path
-
-If the organization already has an eligible Microsoft 365 Copilot or Copilot Studio entitlement, a future enterprise version can connect the same frontend concept to a Microsoft agent. That is a separate licensed deployment path and is not required for the zero-cost local-agent mode.
+The local document agent loads those files automatically when the page starts.
