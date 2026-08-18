@@ -25,7 +25,6 @@ const els = {
   chatForm: document.getElementById("chatForm"),
   questionInput: document.getElementById("questionInput"),
   sendButton: document.getElementById("sendButton"),
-  welcomeCard: document.getElementById("welcomeCard"),
   messageTemplate: document.getElementById("messageTemplate")
 };
 
@@ -99,8 +98,7 @@ function chunkSection(text, locator, document, targetSize = 1250, overlap = 180)
       let start = 0;
       while (start < paragraph.length) {
         const end = Math.min(start + targetSize, paragraph.length);
-        const slice = paragraph.slice(start, end);
-        buffer = slice;
+        buffer = paragraph.slice(start, end);
         pushBuffer();
         buffer = "";
         if (end === paragraph.length) break;
@@ -184,7 +182,7 @@ async function parseTextFile(file) {
     try {
       text = JSON.stringify(JSON.parse(text), null, 2);
     } catch (_) {
-      // Keep raw text when the JSON is malformed; retrieval can still use readable fragments.
+      // Keep raw text when malformed JSON still contains readable evidence.
     }
   }
   return [{ text, locator: "Document" }];
@@ -243,6 +241,36 @@ async function addFiles(fileList) {
   hideProcessing();
   els.sendButton.disabled = false;
   els.fileInput.value = "";
+}
+
+async function loadBundledProjectFiles() {
+  try {
+    const response = await fetch("project-files/manifest.json", { cache: "no-store" });
+    if (!response.ok) return;
+    const manifest = await response.json();
+    const entries = Array.isArray(manifest.files) ? manifest.files : [];
+    if (!entries.length) return;
+
+    const files = [];
+    for (const entry of entries) {
+      const path = typeof entry === "string" ? entry : entry?.path;
+      if (!path) continue;
+      try {
+        const fileResponse = await fetch(encodeURI(path), { cache: "no-store" });
+        if (!fileResponse.ok) continue;
+        const blob = await fileResponse.blob();
+        const name = typeof entry === "object" && entry.name
+          ? entry.name
+          : decodeURIComponent(path.split("/").pop());
+        files.push(new File([blob], name, { type: blob.type }));
+      } catch (_) {
+        // One missing repository file should not prevent the rest of the knowledge base loading.
+      }
+    }
+    if (files.length) await addFiles(files);
+  } catch (_) {
+    // The app remains fully usable with manual uploads when no manifest is available.
+  }
 }
 
 function removeDocument(documentId) {
@@ -313,8 +341,7 @@ function queryProfile(query) {
 
 function buildDocumentFrequency(tokens) {
   const df = new Map();
-  const uniqueQuery = [...new Set(tokens)];
-  for (const token of uniqueQuery) {
+  for (const token of [...new Set(tokens)]) {
     let count = 0;
     for (const chunk of state.chunks) {
       if (chunk.tokenSet.has(token) || chunk.fileName.toLowerCase().includes(token)) count += 1;
@@ -536,8 +563,7 @@ function appendMessage(role, content, sources = []) {
 function askQuestion(question) {
   const trimmed = String(question || "").trim();
   if (!trimmed) return;
-  if (document.getElementById("welcomeCard")) document.getElementById("welcomeCard").remove();
-
+  document.getElementById("welcomeCard")?.remove();
   appendMessage("user", trimmed);
   state.messages.push({ role: "user", content: trimmed });
 
@@ -627,3 +653,4 @@ els.chatForm.addEventListener("submit", event => {
 bindSuggestionButtons();
 renderFiles();
 renderStats();
+loadBundledProjectFiles();
