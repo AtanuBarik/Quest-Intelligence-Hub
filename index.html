@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Insights Copilot - free local AI chatbot for project files" />
+  <meta name="description" content="Insights Copilot - free local document agent for project files" />
   <title>Insights Copilot | Quest Intelligence Hub</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,6 +13,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs" type="module"></script>
   <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 </head>
 <body>
   <div class="app-shell">
@@ -42,12 +43,12 @@
           </div>
 
           <div class="drop-zone" id="dropZone">
-            <input id="fileInput" type="file" multiple accept=".pdf,.docx,.txt,.md,.csv,.json,.xlsx,.xls" />
+            <input id="fileInput" type="file" multiple accept=".pdf,.docx,.doc,.pptx,.ppt,.txt,.md,.csv,.json,.xlsx,.xls" />
             <div class="upload-icon">+</div>
             <strong>Upload project files</strong>
-            <span>Choose Final Reports, Expert Transcripts, Survey Data, notes, or other evidence.</span>
+            <span>Choose reports, presentations, Word files, survey workbooks, transcripts, notes, or other evidence.</span>
             <button class="upload-button" id="browseFilesButton" type="button">Choose files</button>
-            <small>PDF - DOCX - XLSX - XLS - CSV - JSON - TXT - MD</small>
+            <small>PDF - DOCX - PPTX - XLSX/XLS - CSV - JSON - TXT - MD</small>
           </div>
 
           <div class="index-stats" id="indexStats">
@@ -63,14 +64,15 @@
 
         <section class="panel guidance-panel">
           <div class="eyebrow">How answers are generated</div>
-          <h3>Local AI over your uploaded files</h3>
-          <p>The browser reads your files, retrieves the most relevant passages, and runs a free question-answering model locally over those passages.</p>
+          <h3>Free local document agent</h3>
+          <p>The browser parses your files, retrieves the most relevant passages, then chooses local QA or local synthesis depending on the question.</p>
           <ul>
-            <li>No paid API key is required.</li>
-            <li>Your uploaded project files stay in the browser.</li>
-            <li>The first question downloads the free local QA model; later questions reuse the browser cache.</li>
-            <li>Answers include supporting file, PDF page, or spreadsheet sheet citations where available.</li>
-            <li>If the files do not support the answer, Insights Copilot does not use outside knowledge.</li>
+            <li>No paid ChatGPT or Microsoft Copilot API is required.</li>
+            <li>Uploaded project files stay in the browser.</li>
+            <li>Direct questions use a local extractive QA model.</li>
+            <li>Summaries and comparisons use a small local synthesis model with grounding checks.</li>
+            <li>PDF pages, PowerPoint slides, and Excel sheets are retained as source locations.</li>
+            <li>Legacy .doc and .ppt files should be saved as .docx or .pptx before upload.</li>
           </ul>
         </section>
       </aside>
@@ -78,7 +80,7 @@
       <section class="chat-panel panel">
         <div class="chat-header">
           <div>
-            <div class="eyebrow">Local project-file AI</div>
+            <div class="eyebrow">Local document agent</div>
             <h2>Ask your project</h2>
           </div>
           <button class="secondary-button" id="newChatButton">New chat</button>
@@ -88,7 +90,7 @@
           <div class="welcome-card" id="welcomeCard">
             <div class="copilot-avatar">AI</div>
             <h2>Ask your uploaded project files</h2>
-            <p>Choose files on the left, then ask a question. Insights Copilot retrieves the relevant passages and runs a local question-answering model over that evidence.</p>
+            <p>Choose files on the left, then ask a question. The local agent selects the right processing tools, retrieves relevant evidence, and answers from those files only.</p>
             <div class="suggestion-grid">
               <button class="suggestion">What are the most important findings?</button>
               <button class="suggestion">What themes recur across expert interviews?</button>
@@ -103,7 +105,7 @@
             <textarea id="questionInput" rows="1" placeholder="Ask a question about the files you uploaded..." aria-label="Ask Insights Copilot"></textarea>
             <button id="sendButton" class="send-button" type="submit" aria-label="Send question">&uarr;</button>
           </div>
-          <div class="composer-note">No paid AI API is used. The uploaded files are parsed locally; a free browser-side QA model answers only from retrieved file evidence.</div>
+          <div class="composer-note">Zero-cost mode: files are parsed locally and local browser models process only retrieved project evidence. The first use may download model files.</div>
         </form>
       </section>
     </main>
@@ -120,6 +122,6 @@
     </article>
   </template>
 
-  <script type="module" src="local-qa.js"></script>
+  <script type="module" src="local-agent.js"></script>
 </body>
 </html>
