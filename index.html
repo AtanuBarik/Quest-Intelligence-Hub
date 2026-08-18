@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Insights Copilot - Microsoft Copilot Studio bridge with local project-file fallback" />
+  <meta name="description" content="Insights Copilot - Microsoft Copilot Studio agent with local project-file fallback" />
   <title>Insights Copilot | Quest Intelligence Hub</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,7 +15,6 @@
   <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  <script src="https://cdn.botframework.com/botframework-webchat/latest/webchat.js"></script>
   <script src="copilot-config.js"></script>
 </head>
 <body>
@@ -30,7 +29,7 @@
       </div>
       <div class="status-pill status-ready" id="privacyStatus">
         <span class="status-dot"></span>
-        Upload files to begin
+        Starting Insights Copilot
       </div>
     </header>
 
@@ -48,7 +47,7 @@
           <div class="drop-zone" id="dropZone">
             <input id="fileInput" type="file" multiple accept=".pdf,.docx,.doc,.pptx,.ppt,.txt,.md,.csv,.json,.xlsx,.xls" />
             <div class="upload-icon">+</div>
-            <strong>Upload project files</strong>
+            <strong>Upload files for Local mode</strong>
             <span>Choose reports, presentations, Word files, survey workbooks, transcripts, notes, or other evidence.</span>
             <button class="upload-button" id="browseFilesButton" type="button">Choose files</button>
             <small>PDF - DOCX - PPTX - XLSX/XLS - CSV - JSON - TXT - MD</small>
@@ -70,11 +69,11 @@
           <h3>Quest Insight Engine + local fallback</h3>
           <p>Choose the response engine in the chat header.</p>
           <ul>
-            <li><strong>Quest Insight Engine:</strong> sends the question to your Microsoft Copilot Studio agent using its web-channel Token Endpoint.</li>
-            <li><strong>Local uploaded files:</strong> keeps uploaded files in the browser and answers only from those files.</li>
-            <li>Uploaded browser files are not automatically sent to Copilot Studio.</li>
-            <li>To make the Microsoft agent use project documents, add those documents to the agent's approved knowledge sources such as SharePoint/OneDrive, or continue using Local uploaded files.</li>
-            <li>Never put a Direct Line secret, client secret, API key, or password in this public GitHub repository.</li>
+            <li><strong>Quest Insight Engine:</strong> opens your published Microsoft Copilot Studio Web app directly inside the chatbot panel.</li>
+            <li><strong>Local uploaded files:</strong> processes uploaded files in the browser and answers only from those files.</li>
+            <li>The left-side upload control belongs to Local mode; the Microsoft agent uses its own configured Copilot Studio knowledge sources.</li>
+            <li>The Web app code you supplied has Microsoft file attachment disabled, so file upload inside the Copilot iframe is not available.</li>
+            <li>This repository contains no Direct Line secret, API key, password, or client secret.</li>
           </ul>
         </section>
       </aside>
@@ -87,20 +86,31 @@
           </div>
           <div class="chat-header-actions">
             <div class="engine-switch" role="group" aria-label="Response engine">
-              <button class="engine-button" id="copilotModeButton" type="button" aria-pressed="false">Quest Insight Engine</button>
-              <button class="engine-button active" id="localModeButton" type="button" aria-pressed="true">Local uploaded files</button>
+              <button class="engine-button active" id="copilotModeButton" type="button" aria-pressed="true">Quest Insight Engine</button>
+              <button class="engine-button" id="localModeButton" type="button" aria-pressed="false">Local uploaded files</button>
             </div>
             <button class="secondary-button" id="newChatButton">New chat</button>
           </div>
         </div>
 
-        <div class="engine-status-note" id="engineStatusNote">Local uploaded-files mode: files stay in the browser and the local document agent answers only from those files.</div>
+        <div class="engine-status-note" id="engineStatusNote">Loading Quest Insight Engine from Microsoft Copilot Studio.</div>
 
-        <div class="chat-body" id="chatBody">
+        <div class="copilot-frame-host" id="copilotFrameHost">
+          <iframe
+            id="copilotFrame"
+            title="Quest Insight Engine"
+            src="about:blank"
+            frameborder="0"
+            referrerpolicy="strict-origin-when-cross-origin"
+            style="width:100%;height:100%;border:0;"
+          ></iframe>
+        </div>
+
+        <div class="chat-body" id="chatBody" hidden>
           <div class="welcome-card" id="welcomeCard">
             <div class="copilot-avatar">AI</div>
-            <h2>Ask your project</h2>
-            <p>Use Quest Insight Engine for your Copilot Studio knowledge, or upload files and use Local uploaded files for browser-only analysis.</p>
+            <h2>Ask your uploaded project files</h2>
+            <p>Switch to Local uploaded files, choose files on the left, then ask questions across those files.</p>
             <div class="suggestion-grid">
               <button class="suggestion">What are the most important findings?</button>
               <button class="suggestion">What themes recur across expert interviews?</button>
@@ -110,12 +120,12 @@
           </div>
         </div>
 
-        <form class="composer" id="chatForm">
+        <form class="composer" id="chatForm" hidden>
           <div class="composer-box">
             <textarea id="questionInput" rows="1" placeholder="Ask a question about the files you uploaded..." aria-label="Ask Insights Copilot"></textarea>
             <button id="sendButton" class="send-button" type="submit" aria-label="Send question">&uarr;</button>
           </div>
-          <div class="composer-note" id="composerNote">Local mode: uploaded files are parsed and processed in the browser. No Copilot Studio connection is used.</div>
+          <div class="composer-note" id="composerNote">Local mode: uploaded files are parsed and processed in the browser.</div>
         </form>
       </section>
     </main>
