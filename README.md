@@ -1,35 +1,42 @@
 # Quest Intelligence Hub - Insights Copilot
 
-**Insights Copilot** is a free, browser-based chatbot for asking questions about project files such as Final Reports, Expert Transcripts, Survey Data, spreadsheets, notes, and supporting evidence.
+**Insights Copilot** is a zero-cost, browser-based document agent for asking questions about project files such as Final Reports, Expert Transcripts, Survey Data, PowerPoint decks, Word documents, spreadsheets, notes, and supporting evidence.
 
-The current version does not use dummy answers and does not call a paid AI API. It parses the uploaded files in the browser, retrieves the most relevant evidence, and runs a local question-answering model over those passages.
+It does not require a paid ChatGPT or Microsoft Copilot API. The browser parses uploaded files locally, retrieves relevant evidence, and then chooses the appropriate local processing tool for the question.
 
-## How it works
+## How the local agent works
 
-1. The user uploads project files through the **Choose files** button or drag-and-drop area.
-2. The browser parses the files and splits the readable content into evidence chunks.
-3. The user's question is matched against the most relevant chunks.
-4. Insights Copilot loads a free browser-side question-answering model on the first question.
-5. The model answers the question from the retrieved project evidence.
-6. The response shows the supporting file and, where available, PDF page or spreadsheet sheet.
-7. If the local model cannot load, the app falls back to direct evidence extraction from the uploaded files rather than showing canned content.
-8. If the files do not support the question, the chatbot says so instead of using outside knowledge.
+1. The user uploads one or more project files using **Choose files** or drag-and-drop.
+2. The browser parses the files and splits readable content into evidence chunks.
+3. The agent classifies the question as direct QA, quantitative, summary, or comparison.
+4. It retrieves the most relevant passages from the uploaded files.
+5. Direct and quantitative questions use a local extractive QA model.
+6. Summaries and comparisons use a small local text-to-text model over retrieved evidence.
+7. A grounding check rejects weak synthesis and falls back to direct evidence extraction.
+8. The answer shows supporting source chips including PDF page, PowerPoint slide, or spreadsheet sheet when available.
+9. If the files do not support the question, the agent does not answer from outside knowledge.
 
-## Local AI model
+## Local AI models
 
-The frontend uses Transformers.js with the `Xenova/distilbert-base-uncased-distilled-squad` question-answering model. The model is downloaded to the browser the first time a question is asked and can then be reused from the browser cache.
+The frontend uses Transformers.js with:
 
-No OpenAI API key, ChatGPT API subscription, Vercel backend, or per-question payment is required.
+- `Xenova/distilbert-base-uncased-distilled-squad` for direct question answering.
+- `Xenova/flan-t5-small` for local summaries and comparisons.
+
+The model files are downloaded by the browser when first needed and may be reused from browser cache. No OpenAI API key, ChatGPT API subscription, Vercel backend, Copilot Studio capacity, or per-question API payment is required for this mode.
 
 ## Supported project files
 
 - PDF - page-aware source labels
-- DOCX
-- XLSX / XLS - sheet-aware source labels
+- DOCX - Word documents
+- PPTX - PowerPoint slides with slide-aware source labels
+- XLSX / XLS - Excel workbooks with sheet-aware source labels
 - CSV
 - JSON
 - TXT
 - Markdown
+
+Legacy binary `.doc` and `.ppt` files are not parsed by the static browser app. Save them as `.docx` or `.pptx` before uploading.
 
 ## Use the chatbot
 
@@ -40,21 +47,20 @@ Open the GitHub Pages site:
 Then:
 
 1. Click **Choose files**.
-2. Select one or more project files.
-3. Wait until the Knowledge Base shows the files as ready.
-4. Type a question about those files.
-5. On the first question, allow the browser time to download the free local QA model.
-6. Review the answer and its source chips.
+2. Select one or more supported project files.
+3. Wait until the Knowledge Base shows them as ready.
+4. Ask a question about the files.
+5. On first use, allow the browser time to download the required local model.
+6. Review the answer and source chips.
 
-For best results, ask focused questions such as:
+Example questions:
 
 - What percentage of respondents preferred option A?
-- What reason did experts give for the decline in demand?
-- What is the recommended market-entry approach?
-- What did the report identify as the primary risk?
-- Which customer segment showed the highest interest?
-
-Broader questions such as "What are the most important findings?" are answered by running the local QA model across multiple high-ranking passages and combining the strongest evidence-backed answers.
+- What did experts identify as the main barrier?
+- Summarize the most important findings across the report and presentation.
+- Compare the survey results with the expert interviews.
+- Where do the report and PowerPoint deck disagree?
+- What recommendation is supported by the strongest evidence?
 
 ## Repository-hosted project files
 
@@ -67,7 +73,8 @@ Example:
   "files": [
     "project-files/final-report.pdf",
     "project-files/expert-transcripts.docx",
-    "project-files/survey-data.xlsx"
+    "project-files/survey-data.xlsx",
+    "project-files/management-presentation.pptx"
   ]
 }
 ```
@@ -76,19 +83,12 @@ The app loads those files automatically when the page starts. Manual upload rema
 
 ## Privacy
 
-Uploaded project files are parsed and searched locally in the browser. The project files are not sent to OpenAI or another paid AI service.
+Uploaded project files are parsed and searched locally in the browser. They are not sent to OpenAI, Microsoft Copilot, or another paid AI API in the zero-cost mode.
 
-The browser does download the Transformers.js library and pretrained QA model from their public hosting/CDN when needed. That model then runs in the browser against the retrieved text passages.
+The browser does download the JavaScript libraries and pretrained local model files needed for parsing and inference. Those models then run in the browser against retrieved text from the uploaded project files.
 
-**Important:** this GitHub repository is public. Do not commit confidential reports, expert transcripts, respondent-level survey data, personal data, client-confidential material, or other restricted content into `project-files/`. Use the browser upload option for sensitive material, subject to your organization's data-handling requirements.
+**Important:** this GitHub repository is public. Do not commit confidential reports, expert transcripts, respondent-level survey data, personal data, client-confidential material, or other restricted content into `project-files/`. Use browser upload for sensitive material, subject to your organization's data-handling requirements.
 
-## Grounding safeguards
+## Optional enterprise path
 
-Insights Copilot is designed to:
-
-- answer only from the currently loaded project files;
-- retrieve relevant passages before running the QA model;
-- keep file, page, and sheet source labels;
-- show supporting evidence with the answer;
-- avoid outside knowledge when project evidence is missing;
-- fall back to direct evidence extraction if the browser-side AI model cannot load.
+If the organization already has an eligible Microsoft 365 Copilot or Copilot Studio entitlement, a future enterprise version can connect the same frontend concept to a Microsoft agent. That is a separate licensed deployment path and is not required for the zero-cost local-agent mode.
