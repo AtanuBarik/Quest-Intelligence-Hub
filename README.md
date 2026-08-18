@@ -1,22 +1,48 @@
 # Quest Intelligence Hub — Insights Copilot
 
-**Insights Copilot** is a GitHub Pages-ready, evidence-grounded chatbot for asking questions across project materials such as Final Reports, Expert Transcripts, Survey Data, supporting evidence and research notes.
+**Insights Copilot** is an evidence-grounded research chatbot for asking questions across Final Reports, Expert Transcripts, Survey Data, supporting evidence and research notes. The frontend retrieves the most relevant evidence locally, then uses the OpenAI Responses API to generate a cited answer.
 
-## What it does
+## How it works
 
-- Upload and analyze PDF, DOCX, XLSX/XLS, CSV, JSON, TXT and Markdown files.
-- Parse files directly in the browser.
-- Break project material into searchable evidence chunks.
-- Rank evidence against the user's question.
-- Return concise, extractive answers with file/page/sheet citations where available.
-- Keep user-uploaded files in the browser session rather than sending them to a remote AI service.
-- Auto-load repository-hosted project files through `project-files/manifest.json` once paths are added there.
+1. Project files are parsed in the browser.
+2. The files are broken into searchable evidence chunks.
+3. The user's question is matched against those chunks.
+4. Only the highest-ranking excerpts, the question and limited conversation history are sent to the serverless `/api/chat` route.
+5. The server calls OpenAI and instructs the model to answer only from the supplied evidence, cite source numbers, surface conflicts and state when evidence is insufficient.
+6. The frontend renders the answer with the corresponding file/page/sheet source labels.
+
+Supported formats: PDF, DOCX, XLSX/XLS, CSV, JSON, TXT and Markdown. PDF citations retain page locations and spreadsheets retain sheet names where available.
+
+## Secure OpenAI integration
+
+The OpenAI API key is never placed in browser code. The serverless route reads it from the deployment environment:
+
+```text
+OPENAI_API_KEY=your_server_side_key
+OPENAI_MODEL=gpt-5.6
+```
+
+`OPENAI_MODEL` is optional. The application defaults to `gpt-5.6`.
+
+The OpenAI request uses the Responses API with `store: false`. Project files themselves remain in the browser; only retrieved excerpts needed for a question are transmitted to the API.
+
+## Deploy the working frontend
+
+This repository now includes a Vercel-compatible serverless function at `api/chat.js`. GitHub Pages alone cannot securely host an OpenAI API secret, so use a serverless host for the ChatGPT-enabled version.
+
+### Vercel
+
+1. Import this GitHub repository into Vercel.
+2. Add `OPENAI_API_KEY` under the Vercel project's environment variables.
+3. Optionally add `OPENAI_MODEL` to override the default model.
+4. Deploy.
+5. Open the deployed URL. The header should show `ChatGPT ready` when the backend is configured.
+
+For local serverless development, install the Vercel CLI and run `vercel dev` after creating a local `.env.local` containing your key. `.env.local` is ignored by Git.
 
 ## Repository-hosted project files
 
-Place project material under `project-files/` and add each file path to `project-files/manifest.json`.
-
-Example:
+Place non-sensitive project material under `project-files/` and add each path to `project-files/manifest.json`:
 
 ```json
 {
@@ -28,38 +54,18 @@ Example:
 }
 ```
 
-When the site loads, Insights Copilot will attempt to load and index those files automatically. Users can still add additional files through drag-and-drop or the upload control.
+The application will load and index those files automatically. Users can also add additional files with drag-and-drop.
 
-## Supported formats
+**Important:** this GitHub repository is public. Do not commit confidential reports, expert transcripts, respondent-level survey data, personal data, client-confidential material or other restricted content to `project-files/`. For sensitive material, use browser upload and protect the deployed application with your organization's authentication/access controls.
 
-- PDF — page-aware citations
-- DOCX
-- XLSX / XLS — sheet-aware citations
-- CSV
-- JSON
-- TXT
-- Markdown
+## Privacy and security behavior
 
-PDF, DOCX and spreadsheet parsing use browser libraries loaded from public CDNs. The site therefore needs internet access for those parsers unless they are vendored into the repository later.
+- API credentials stay server-side.
+- Browser-uploaded files are parsed locally.
+- Only retrieved excerpts are sent to OpenAI for each question.
+- The backend caps evidence and conversation payload sizes.
+- The model is instructed to treat uploaded evidence as untrusted data, not as executable instructions.
+- Responses must cite supplied evidence and should decline to invent unsupported findings.
+- `.env` and Vercel local configuration are excluded by `.gitignore`.
 
-## Run locally
-
-Serve the repository through an HTTP server rather than opening `index.html` directly:
-
-```bash
-python -m http.server 8000
-```
-
-Then open `http://localhost:8000`.
-
-## GitHub Pages
-
-In GitHub repository settings, enable Pages from the `main` branch and root folder after this feature is merged.
-
-## Privacy and security
-
-This implementation deliberately does **not** embed an OpenAI or other LLM API key in the public frontend. Uploaded files are processed in the browser. If a generative-model backend is added later, keep credentials server-side and send only approved retrieval context to that backend.
-
-## Current answer mode
-
-The current version uses local lexical retrieval plus extractive synthesis. It is designed to stay grounded in supplied project evidence and avoid inventing unsupported findings. A secure server-side LLM/RAG layer can be added later without changing the user-facing Insights Copilot workflow.
+For production use, add corporate authentication/SSO, authorization, rate limiting, audit logging and approved data-governance controls around the deployment.
