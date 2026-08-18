@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Insights Copilot - evidence-grounded project file assistant" />
+  <title>Insights Copilot | Quest Intelligence Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs" type="module"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">QI</div>
+        <div>
+          <div class="eyebrow">Quest Intelligence Hub</div>
+          <h1>Insights Copilot</h1>
+        </div>
+      </div>
+      <div class="status-pill" id="privacyStatus">
+        <span class="status-dot"></span>
+        Local evidence mode
+      </div>
+    </header>
+
+    <main class="workspace">
+      <aside class="sidebar">
+        <section class="panel upload-panel">
+          <div class="panel-heading">
+            <div>
+              <div class="eyebrow">Project evidence</div>
+              <h2>Knowledge base</h2>
+            </div>
+            <button class="icon-button" id="clearFilesButton" title="Clear all files" aria-label="Clear all files">×</button>
+          </div>
+
+          <label class="drop-zone" id="dropZone" for="fileInput">
+            <input id="fileInput" type="file" multiple accept=".pdf,.docx,.txt,.md,.csv,.json,.xlsx,.xls" />
+            <div class="upload-icon">↑</div>
+            <strong>Upload project files</strong>
+            <span>Final Reports, Expert Transcripts, Survey Data, notes and supporting evidence</span>
+            <small>PDF · DOCX · XLSX · XLS · CSV · JSON · TXT · MD</small>
+          </label>
+
+          <div class="index-stats" id="indexStats">
+            <div><strong id="fileCount">0</strong><span>files</span></div>
+            <div><strong id="chunkCount">0</strong><span>evidence chunks</span></div>
+            <div><strong id="wordCount">0</strong><span>words</span></div>
+          </div>
+
+          <div class="file-list" id="fileList">
+            <div class="empty-files">Upload files to create a project knowledge base.</div>
+          </div>
+        </section>
+
+        <section class="panel guidance-panel">
+          <div class="eyebrow">Evidence policy</div>
+          <h3>Grounded answers only</h3>
+          <p>Insights Copilot answers from uploaded project evidence and shows the supporting sources used for each response.</p>
+          <ul>
+            <li>No API key is stored in this repository.</li>
+            <li>Files are processed in the browser.</li>
+            <li>Unsupported or unreadable files are clearly flagged.</li>
+          </ul>
+        </section>
+      </aside>
+
+      <section class="chat-panel panel">
+        <div class="chat-header">
+          <div>
+            <div class="eyebrow">Evidence-grounded assistant</div>
+            <h2>Ask your project</h2>
+          </div>
+          <button class="secondary-button" id="newChatButton">New chat</button>
+        </div>
+
+        <div class="chat-body" id="chatBody">
+          <div class="welcome-card" id="welcomeCard">
+            <div class="copilot-avatar">✦</div>
+            <h2>What would you like to know?</h2>
+            <p>Upload project material, then ask questions across final reports, expert interviews, surveys and other evidence.</p>
+            <div class="suggestion-grid">
+              <button class="suggestion">What are the most important findings?</button>
+              <button class="suggestion">What themes recur across expert interviews?</button>
+              <button class="suggestion">What does the survey data say about customer priorities?</button>
+              <button class="suggestion">Where do the sources disagree?</button>
+            </div>
+          </div>
+        </div>
+
+        <form class="composer" id="chatForm">
+          <div class="composer-box">
+            <textarea id="questionInput" rows="1" placeholder="Ask Insights Copilot about your project files…" aria-label="Ask Insights Copilot"></textarea>
+            <button id="sendButton" class="send-button" type="submit" aria-label="Send question">↑</button>
+          </div>
+          <div class="composer-note">Answers are derived from the project files currently loaded in this browser session.</div>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <template id="messageTemplate">
+    <article class="message">
+      <div class="message-avatar"></div>
+      <div class="message-content">
+        <div class="message-label"></div>
+        <div class="message-text"></div>
+        <div class="sources"></div>
+      </div>
+    </article>
+  </template>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
