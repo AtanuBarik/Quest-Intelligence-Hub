@@ -3,12 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Insights Copilot - evidence-grounded project file assistant" />
+  <meta name="description" content="Insights Copilot - ChatGPT-powered, evidence-grounded project file assistant" />
+  <meta name="insights-api-endpoint" content="/api/chat" />
   <title>Insights Copilot | Quest Intelligence Hub</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="chatgpt.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs" type="module"></script>
   <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -23,9 +25,9 @@
           <h1>Insights Copilot</h1>
         </div>
       </div>
-      <div class="status-pill" id="privacyStatus">
+      <div class="status-pill connecting" id="privacyStatus">
         <span class="status-dot"></span>
-        Local evidence mode
+        Connecting to ChatGPT…
       </div>
     </header>
 
@@ -61,12 +63,12 @@
 
         <section class="panel guidance-panel">
           <div class="eyebrow">Evidence policy</div>
-          <h3>Grounded answers only</h3>
-          <p>Insights Copilot answers from uploaded project evidence and shows the supporting sources used for each response.</p>
+          <h3>Grounded ChatGPT answers</h3>
+          <p>Insights Copilot finds the most relevant excerpts in your project files and sends only those excerpts with your question to OpenAI for response generation.</p>
           <ul>
-            <li>No API key is stored in this repository.</li>
-            <li>Files are processed in the browser.</li>
-            <li>Unsupported or unreadable files are clearly flagged.</li>
+            <li>The OpenAI API key stays on the server.</li>
+            <li>Files are parsed and ranked in the browser.</li>
+            <li>Responses are instructed to cite supplied evidence and flag gaps or conflicts.</li>
           </ul>
         </section>
       </aside>
@@ -74,7 +76,7 @@
       <section class="chat-panel panel">
         <div class="chat-header">
           <div>
-            <div class="eyebrow">Evidence-grounded assistant</div>
+            <div class="eyebrow">ChatGPT-powered research assistant</div>
             <h2>Ask your project</h2>
           </div>
           <button class="secondary-button" id="newChatButton">New chat</button>
@@ -84,7 +86,7 @@
           <div class="welcome-card" id="welcomeCard">
             <div class="copilot-avatar">✦</div>
             <h2>What would you like to know?</h2>
-            <p>Upload project material, then ask questions across final reports, expert interviews, surveys and other evidence.</p>
+            <p>Upload project material, then ask ChatGPT-powered questions across final reports, expert interviews, surveys and other evidence.</p>
             <div class="suggestion-grid">
               <button class="suggestion">What are the most important findings?</button>
               <button class="suggestion">What themes recur across expert interviews?</button>
@@ -99,7 +101,7 @@
             <textarea id="questionInput" rows="1" placeholder="Ask Insights Copilot about your project files…" aria-label="Ask Insights Copilot"></textarea>
             <button id="sendButton" class="send-button" type="submit" aria-label="Send question">↑</button>
           </div>
-          <div class="composer-note">Answers are derived from the project files currently loaded in this browser session.</div>
+          <div class="composer-note">Project files stay in the browser; only relevant retrieved excerpts and your question are sent to OpenAI when you submit a query.</div>
         </form>
       </section>
     </main>
@@ -117,5 +119,6 @@
   </template>
 
   <script type="module" src="app.js"></script>
+  <script type="module" src="chatgpt.js"></script>
 </body>
 </html>
