@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - '.github/workflows/replicate-source-once.yml'
+  issues:
+    types: [opened]
 
 permissions:
   contents: write
