@@ -1,0 +1,26 @@
+.status-pill.ready .status-dot {
+  background: #1f9d63;
+  box-shadow: 0 0 0 4px rgba(31, 157, 99, 0.12);
+}
+
+.status-pill.connecting .status-dot {
+  animation: copilot-pulse 1.2s ease-in-out infinite;
+}
+
+.status-pill.error .status-dot {
+  background: #c94b4b;
+  box-shadow: 0 0 0 4px rgba(201, 75, 75, 0.12);
+}
+
+.message.ai-pending {
+  opacity: 0.78;
+}
+
+.message.ai-pending .message-text {
+  font-style: italic;
+}
+
+@keyframes copilot-pulse {
+  0%, 100% { opacity: 0.45; transform: scale(0.92); }
+  50% { opacity: 1; transform: scale(1.08); }
+}
