@@ -3,12 +3,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Insights Copilot - free, evidence-grounded project file assistant" />
+  <meta name="description" content="Insights Copilot - free local AI chatbot for project files" />
   <title>Insights Copilot | Quest Intelligence Hub</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="local-ai.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs" type="module"></script>
   <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -23,9 +24,9 @@
           <h1>Insights Copilot</h1>
         </div>
       </div>
-      <div class="status-pill" id="privacyStatus">
+      <div class="status-pill status-ready" id="privacyStatus">
         <span class="status-dot"></span>
-        Free · project files only
+        Upload files to begin
       </div>
     </header>
 
@@ -37,16 +38,17 @@
               <div class="eyebrow">Project evidence</div>
               <h2>Knowledge base</h2>
             </div>
-            <button class="icon-button" id="clearFilesButton" title="Clear all files" aria-label="Clear all files">×</button>
+            <button class="icon-button" id="clearFilesButton" title="Clear all files" aria-label="Clear all files">x</button>
           </div>
 
-          <label class="drop-zone" id="dropZone" for="fileInput">
+          <div class="drop-zone" id="dropZone">
             <input id="fileInput" type="file" multiple accept=".pdf,.docx,.txt,.md,.csv,.json,.xlsx,.xls" />
-            <div class="upload-icon">↑</div>
+            <div class="upload-icon">+</div>
             <strong>Upload project files</strong>
-            <span>Final Reports, Expert Transcripts, Survey Data, notes and supporting evidence</span>
-            <small>PDF · DOCX · XLSX · XLS · CSV · JSON · TXT · MD</small>
-          </label>
+            <span>Choose Final Reports, Expert Transcripts, Survey Data, notes, or other evidence.</span>
+            <button class="upload-button" id="browseFilesButton" type="button">Choose files</button>
+            <small>PDF - DOCX - XLSX - XLS - CSV - JSON - TXT - MD</small>
+          </div>
 
           <div class="index-stats" id="indexStats">
             <div><strong id="fileCount">0</strong><span>files</span></div>
@@ -55,19 +57,20 @@
           </div>
 
           <div class="file-list" id="fileList">
-            <div class="empty-files">Upload files to create a project knowledge base.</div>
+            <div class="empty-files">No project files loaded yet.</div>
           </div>
         </section>
 
         <section class="panel guidance-panel">
-          <div class="eyebrow">Evidence policy</div>
-          <h3>Project-files-only answers</h3>
-          <p>Insights Copilot searches the files loaded in this browser and generates a grounded response from the most relevant evidence it finds.</p>
+          <div class="eyebrow">How answers are generated</div>
+          <h3>Local AI over your uploaded files</h3>
+          <p>The browser reads your files, retrieves the most relevant passages, and runs a free question-answering model locally over those passages.</p>
           <ul>
-            <li>No paid AI API or API key is required.</li>
-            <li>Uploaded files are processed in the browser.</li>
-            <li>Answers cite the supporting file, page or sheet where available.</li>
-            <li>If the files do not support an answer, the chatbot says so instead of using outside knowledge.</li>
+            <li>No paid API key is required.</li>
+            <li>Your uploaded project files stay in the browser.</li>
+            <li>The first question downloads the free local QA model; later questions reuse the browser cache.</li>
+            <li>Answers include supporting file, PDF page, or spreadsheet sheet citations where available.</li>
+            <li>If the files do not support the answer, Insights Copilot does not use outside knowledge.</li>
           </ul>
         </section>
       </aside>
@@ -75,7 +78,7 @@
       <section class="chat-panel panel">
         <div class="chat-header">
           <div>
-            <div class="eyebrow">Project-file research assistant</div>
+            <div class="eyebrow">Local project-file AI</div>
             <h2>Ask your project</h2>
           </div>
           <button class="secondary-button" id="newChatButton">New chat</button>
@@ -83,9 +86,9 @@
 
         <div class="chat-body" id="chatBody">
           <div class="welcome-card" id="welcomeCard">
-            <div class="copilot-avatar">✦</div>
-            <h2>What would you like to know?</h2>
-            <p>Upload project material, then ask questions across final reports, expert interviews, surveys and other evidence.</p>
+            <div class="copilot-avatar">AI</div>
+            <h2>Ask your uploaded project files</h2>
+            <p>Choose files on the left, then ask a question. Insights Copilot retrieves the relevant passages and runs a local question-answering model over that evidence.</p>
             <div class="suggestion-grid">
               <button class="suggestion">What are the most important findings?</button>
               <button class="suggestion">What themes recur across expert interviews?</button>
@@ -97,10 +100,10 @@
 
         <form class="composer" id="chatForm">
           <div class="composer-box">
-            <textarea id="questionInput" rows="1" placeholder="Ask Insights Copilot about your project files…" aria-label="Ask Insights Copilot"></textarea>
-            <button id="sendButton" class="send-button" type="submit" aria-label="Send question">↑</button>
+            <textarea id="questionInput" rows="1" placeholder="Ask a question about the files you uploaded..." aria-label="Ask Insights Copilot"></textarea>
+            <button id="sendButton" class="send-button" type="submit" aria-label="Send question">&uarr;</button>
           </div>
-          <div class="composer-note">No paid API is used. Answers are generated only from the project files currently loaded in this browser session.</div>
+          <div class="composer-note">No paid AI API is used. The uploaded files are parsed locally; a free browser-side QA model answers only from retrieved file evidence.</div>
         </form>
       </section>
     </main>
@@ -117,6 +120,6 @@
     </article>
   </template>
 
-  <script type="module" src="app.js"></script>
+  <script type="module" src="local-qa.js"></script>
 </body>
 </html>
