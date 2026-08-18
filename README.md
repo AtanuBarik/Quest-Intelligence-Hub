@@ -1,29 +1,31 @@
-# Quest Intelligence Hub — Insights Copilot
+# Quest Intelligence Hub - Insights Copilot
 
-**Insights Copilot** is a free, evidence-grounded project-file chatbot for asking questions across Final Reports, Expert Transcripts, Survey Data, supporting evidence and research notes.
+**Insights Copilot** is a free, browser-based chatbot for asking questions about project files such as Final Reports, Expert Transcripts, Survey Data, spreadsheets, notes, and supporting evidence.
 
-It does **not** use a paid AI API. It processes the project files in the browser, retrieves the most relevant evidence, and generates a concise answer from that evidence only.
+The current version does not use dummy answers and does not call a paid AI API. It parses the uploaded files in the browser, retrieves the most relevant evidence, and runs a local question-answering model over those passages.
 
 ## How it works
 
-1. Project files are parsed in the browser.
-2. The content is split into searchable evidence chunks.
+1. The user uploads project files through the **Choose files** button or drag-and-drop area.
+2. The browser parses the files and splits the readable content into evidence chunks.
 3. The user's question is matched against the most relevant chunks.
-4. The local response engine selects the strongest supporting sentences and synthesizes them into an answer.
-5. The answer cites the corresponding file, PDF page or spreadsheet sheet where available.
-6. If the loaded files do not contain enough evidence, Insights Copilot says so instead of answering from outside knowledge.
+4. Insights Copilot loads a free browser-side question-answering model on the first question.
+5. The model answers the question from the retrieved project evidence.
+6. The response shows the supporting file and, where available, PDF page or spreadsheet sheet.
+7. If the local model cannot load, the app falls back to direct evidence extraction from the uploaded files rather than showing canned content.
+8. If the files do not support the question, the chatbot says so instead of using outside knowledge.
 
-## No API key or paid service required
+## Local AI model
 
-Insights Copilot runs directly in the browser and requires no OpenAI API key, ChatGPT API subscription, serverless backend or per-question payment.
+The frontend uses Transformers.js with the `Xenova/distilbert-base-uncased-distilled-squad` question-answering model. The model is downloaded to the browser the first time a question is asked and can then be reused from the browser cache.
 
-The only external resources used by the frontend are free browser libraries/CDNs for reading PDF, DOCX and spreadsheet formats.
+No OpenAI API key, ChatGPT API subscription, Vercel backend, or per-question payment is required.
 
 ## Supported project files
 
-- PDF — page-aware source labels
+- PDF - page-aware source labels
 - DOCX
-- XLSX / XLS — sheet-aware source labels
+- XLSX / XLS - sheet-aware source labels
 - CSV
 - JSON
 - TXT
@@ -37,18 +39,22 @@ Open the GitHub Pages site:
 
 Then:
 
-1. Upload one or more project files.
-2. Wait until the files are indexed in the Knowledge Base panel.
-3. Ask a question in the Insights Copilot chat box.
-4. Review the generated answer and its cited source chips.
+1. Click **Choose files**.
+2. Select one or more project files.
+3. Wait until the Knowledge Base shows the files as ready.
+4. Type a question about those files.
+5. On the first question, allow the browser time to download the free local QA model.
+6. Review the answer and its source chips.
 
-Example questions:
+For best results, ask focused questions such as:
 
-- What are the most important findings?
-- What themes recur across expert interviews?
-- What does the survey data say about customer priorities?
-- Where do the sources disagree?
-- What evidence supports this recommendation?
+- What percentage of respondents preferred option A?
+- What reason did experts give for the decline in demand?
+- What is the recommended market-entry approach?
+- What did the report identify as the primary risk?
+- Which customer segment showed the highest interest?
+
+Broader questions such as "What are the most important findings?" are answered by running the local QA model across multiple high-ranking passages and combining the strongest evidence-backed answers.
 
 ## Repository-hosted project files
 
@@ -66,24 +72,23 @@ Example:
 }
 ```
 
-When the site loads, Insights Copilot attempts to load and index those files automatically. Users can still add additional files using drag-and-drop or the upload control.
+The app loads those files automatically when the page starts. Manual upload remains available.
 
 ## Privacy
 
-Browser-uploaded project files are processed locally in the user's browser. The application does not send the project content to OpenAI or another paid AI service.
+Uploaded project files are parsed and searched locally in the browser. The project files are not sent to OpenAI or another paid AI service.
 
-**Important:** this GitHub repository is public. Do not commit confidential reports, expert transcripts, respondent-level survey data, personal data, client-confidential material or other restricted content into `project-files/`. For sensitive material, use the browser upload feature instead.
+The browser does download the Transformers.js library and pretrained QA model from their public hosting/CDN when needed. That model then runs in the browser against the retrieved text passages.
 
-## Grounding behavior
+**Important:** this GitHub repository is public. Do not commit confidential reports, expert transcripts, respondent-level survey data, personal data, client-confidential material, or other restricted content into `project-files/`. Use the browser upload option for sensitive material, subject to your organization's data-handling requirements.
 
-The response engine is intentionally evidence-constrained. It is designed to:
+## Grounding safeguards
 
-- answer from the currently loaded project files only;
-- prioritize evidence matching the user's question;
-- retain PDF page and spreadsheet sheet locations where available;
-- diversify evidence across source files;
-- surface relevant quantitative findings and contrasting statements;
-- show source citations for the evidence used;
-- decline when the loaded files do not sufficiently support an answer.
+Insights Copilot is designed to:
 
-Because this version does not use a large language model, its responses are more extractive and structured than ChatGPT. The advantage is that it is free, private for browser uploads, and tightly grounded in the project evidence.
+- answer only from the currently loaded project files;
+- retrieve relevant passages before running the QA model;
+- keep file, page, and sheet source labels;
+- show supporting evidence with the answer;
+- avoid outside knowledge when project evidence is missing;
+- fall back to direct evidence extraction if the browser-side AI model cannot load.
