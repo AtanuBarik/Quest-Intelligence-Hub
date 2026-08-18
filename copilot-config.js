@@ -1,13 +1,11 @@
-// Quest Insight Engine connection settings.
+// Quest Insight Engine Web app configuration.
 //
-// IMPORTANT:
-// - Put ONLY the Copilot Studio Web/Custom Website TOKEN ENDPOINT here.
-// - NEVER put a Direct Line secret, client secret, password, or API key in this public repository.
-// - The token endpoint is the value Microsoft provides for browser/web-channel integration.
+// This URL comes from Copilot Studio > Channels > Web app > Embed code.
+// It is an iframe URL, not a Direct Line secret or API key.
 window.QUEST_COPILOT_CONFIG = Object.freeze({
-  enabled: false,
+  enabled: true,
   agentName: "Quest Insight Engine",
-  tokenEndpoint: "",
-  defaultMode: "copilot",
-  responseTimeoutMs: 45000
+  connectionMode: "iframe",
+  embedUrl: "https://copilotstudio.microsoft.com/environments/Default-0483ae51-a627-466e-a7dd-de2ac7e1238e/bots/cra4f_surveydataassistant-cjm_3aatKn/webchat?__version__=2&enableFileAttachment=false&cliAgent=true",
+  defaultMode: "copilot"
 });
